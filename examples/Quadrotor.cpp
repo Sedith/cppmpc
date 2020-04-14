@@ -99,11 +99,26 @@ int main()
         ws->qp->in.lbx(i) = c_f * pow(16,2);
         ws->qp->in.ubx(i) = c_f * pow(100,2);
     }
-    for(int i=0;i<size.nbu;i++)
-    {
-        ws->qp->in.lbu(i) = -100;
-        ws->qp->in.ubu(i) = 100;
-    }
+
+    ArrayXd dot_omega_min = ArrayXd::Zero(size.nu);
+    ArrayXd dot_omega_max = ArrayXd::Zero(size.nu);
+
+    ArrayXd omega_slices = ArrayXd::Zero(7);
+    ArrayXd dot_omega_min_slices = ArrayXd::Zero(7);
+    ArrayXd dot_omega_max_slices = ArrayXd::Zero(7);
+    omega_slices << 30, 40, 50, 60, 70, 80, 90;
+    dot_omega_min_slices << -127, -121, -114, -118, -128, -111, -95;
+    dot_omega_max_slices << 209, 208, 244, 208, 149, 156, 135;
+
+    ArrayXd coeff_angular_dec = ArrayXd::Zero(7);
+    ArrayXd coeff_angular_acc = ArrayXd::Zero(7);
+    coeff_angular_dec.tail(6) =
+        (dot_omega_min_slices.tail(6) - dot_omega_min_slices.head(6)) /
+        (omega_slices.tail(6) - omega_slices.head(6));
+    coeff_angular_acc.tail(6) =
+        (dot_omega_max_slices.tail(6) - dot_omega_max_slices.head(6)) /
+        (omega_slices.tail(6) - omega_slices.head(6));
+
 
     ws->qp->in.reg = 1E-8;
 
@@ -122,6 +137,29 @@ int main()
     // start the simulation
     while (t < Tf)
     {
+        double f;
+        for (uint8_t i=0; i<size.nu; i++)
+        {
+            f = x0(12+i);
+            for (uint8_t j=0; j<7; j++)
+            {
+                if (f <= c_f * pow(omega_slices(j),2))
+                {
+                    dot_omega_min(i) = coeff_angular_dec(j) * (sqrt(f/c_f) - omega_slices(j)) + dot_omega_min_slices(j);
+                    dot_omega_max(i) = coeff_angular_acc(j) * (sqrt(f/c_f) - omega_slices(j)) + dot_omega_max_slices(j);
+                    break;
+                }
+                else if (j == 6) {
+                    // we enter this only in the last turn of the loop, if the first cond is
+                    // never fulfilled
+                    dot_omega_min(i) = dot_omega_min_slices(j);
+                    dot_omega_max(i) = dot_omega_max_slices(j);
+                }
+            }
+        }
+        ws->qp->in.lbu = 2 * sqrt(c_f) * x0.segment(12, size.nu).sqrt() * dot_omega_min;
+        ws->qp->in.ubu = 2 * sqrt(c_f) * x0.segment(12, size.nu).sqrt() * dot_omega_max;
+
         // call RTI solving routine
         ws->timer.start();
         ws->qp->generateQP();
