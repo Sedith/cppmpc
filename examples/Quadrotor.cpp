@@ -94,12 +94,12 @@ int main()
         ws->qp->in.W.col(i) = ws->qp->in.W.col(0);
     ws->qp->in.WN = ws->qp->in.W.col(0);
 
-    for(int i=1;i<size.nbx;i++)
+    for(int i=0;i<size.nbx;i++)
     {
         ws->qp->in.lbx(i) = c_f * pow(16,2);
         ws->qp->in.ubx(i) = c_f * pow(100,2);
     }
-    for(int i=1;i<size.nbu;i++)
+    for(int i=0;i<size.nbu;i++)
     {
         ws->qp->in.lbu(i) = -100;
         ws->qp->in.ubu(i) = 100;

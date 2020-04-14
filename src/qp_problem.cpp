@@ -25,10 +25,6 @@
 #include "qp_problem.hpp"
 #include "casadi_wrapper.hpp"
 
-#include <iostream>
-using namespace std;
-#define COUCOU(i) cout<<"coucou "<<i<<endl;
-
 using namespace Eigen;
 
 void qp_in::init(model_size& size)
@@ -140,54 +136,45 @@ void qp_problem::generateQP()
     // start loop
     for(i=0; i<N; i++)
     {
-COUCOU(1);
         casadi_in[0] = in.x.data()+i*nx;
         casadi_in[1] = in.u.data()+i*nu;
         casadi_in[2] = in.p.data()+i*np;
         casadi_in[3] = in.y.data()+i*ny;
         casadi_in[4] = in.W.data()+i*ny;
-COUCOU(2);
         // control bounds
         for (j=0; j<nu; j++)
         {
             data.lb_u(i*nu+j) = in.lbu(j)-in.u(j,i);
             data.ub_u(i*nu+j) = in.ubu(j)-in.u(j,i);
         }
-COUCOU(3);
         // state bounds
         for (j=0; j<nbx; j++)
         {
             data.lb_x(i*nbx+j) = in.lbx(j)-in.x(nbx_idx[j],i+1);
             data.ub_x(i*nbx+j) = in.ubx(j)-in.x(nbx_idx[j],i+1);
         }
-COUCOU(4);
         // integration
         casadi_out[0] = data.a.data()+i*nx;
         F_Fun(casadi_in, casadi_out);
         // equality residual
         data.a.col(i) -= in.x.col(i+1);
-COUCOU(5);
 
         // sensitivity computation
         casadi_out[0] = data.A.data() + i*nx*nx;
         casadi_out[1] = data.B.data() + i*nx*nu;
         D_Fun(casadi_in, casadi_out);
-COUCOU(6);
         // Hessian
         casadi_out[0] = data.Q.data()+i*nx*nx;
         casadi_out[1] = data.R.data()+i*nu*nu;
         casadi_out[2] = data.S.data()+i*nx*nu;
         Hi_Fun(casadi_in, casadi_out);
-COUCOU(7);
 
         regularization(nx, data.Q.data()+i*nx*nx, in.reg);
         regularization(nu, data.R.data()+i*nu*nu, in.reg);
-COUCOU(8);
         // gradient
         casadi_out[0] = data.gx.data()+i*nx;
         casadi_out[1] = data.gu.data()+i*nu;
         gi_Fun(casadi_in, casadi_out);
-COUCOU(9);
         //constraints
         if (nbg > 0)
         {
@@ -202,7 +189,6 @@ COUCOU(9);
             casadi_out[1] = data.Cgu.data()+i*nbg*nu;
             Ci_Fun(casadi_in, casadi_out);
         }
-COUCOU(10);
     }
     // the terminal stage
     casadi_in[0] = in.x.data()+N*nx;
@@ -212,11 +198,9 @@ COUCOU(10);
     casadi_out[0] = data.Q.data()+N*nx*nx;
     HN_Fun(casadi_in, casadi_out);
     regularization(nx, data.Q.data()+N*nx*nx, in.reg);
-COUCOU(11);
 
     casadi_out[0] = data.gx.data()+N*nx;
     gN_Fun(casadi_in, casadi_out);
-COUCOU(12);
 
     if (nbgN > 0)
     {
