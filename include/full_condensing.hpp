@@ -1,28 +1,59 @@
-#ifndef FULL_CONDENSING_H_
-#define FULL_CONDENSING_H_
+/*
+ * Copyright (c) 2020 LAAS/CNRS
+ * All rights reserved.
+ *
+ * Redistribution  and  use  in  source  and binary  forms,  with  or  without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *   1. Redistributions of  source  code must retain the  above copyright
+ *      notice and this list of conditions.
+ *   2. Redistributions in binary form must reproduce the above copyright
+ *      notice and  this list of  conditions in the  documentation and/or
+ *      other materials provided with the distribution.
+ *
+ * THE SOFTWARE  IS PROVIDED "AS IS"  AND THE AUTHOR  DISCLAIMS ALL WARRANTIES
+ * WITH  REGARD   TO  THIS  SOFTWARE  INCLUDING  ALL   IMPLIED  WARRANTIES  OF
+ * MERCHANTABILITY AND  FITNESS.  IN NO EVENT  SHALL THE AUTHOR  BE LIABLE FOR
+ * ANY  SPECIAL, DIRECT,  INDIRECT, OR  CONSEQUENTIAL DAMAGES  OR  ANY DAMAGES
+ * WHATSOEVER  RESULTING FROM  LOSS OF  USE, DATA  OR PROFITS,  WHETHER  IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR  OTHER TORTIOUS ACTION, ARISING OUT OF OR
+ * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ *                                                 Martin Jacquet - March 2020
+ *                                               Based on CPPMPC by Yutao Chen
+ */
+#ifndef H_CPPMPC_FULL_CONDENSING
+#define H_CPPMPC_FULL_CONDENSING
 
 #include "mpc_common.hpp"
 #include "qp_problem.hpp"
 
 using namespace Eigen;
 
-class full_condensing_workspace{
-    public: 
-        Matrix<double, Dynamic, Dynamic, RowMajor> Hc;
-        Matrix<double, Dynamic, Dynamic, RowMajor> Cc;
-        VectorXd gc;
-        VectorXd lcc;
-        VectorXd ucc;
+class full_condensing {
+    private:
+        int nx;
+        int nu;
+        int nbx;
+        int nbg;
+        int nbgN;
+        int N;
 
         MatrixXd G;
         VectorXd L;
         MatrixXd W;
         VectorXd w;
 
-        full_condensing_workspace& init(model_size& size);
+    public:
+        Matrix<double, Dynamic, Dynamic, RowMajor> Hc;
+        Matrix<double, Dynamic, Dynamic, RowMajor> Cc;
+        VectorXd gc;
+        VectorXd lcc;
+        VectorXd ucc;
 
-        full_condensing_workspace& full_condensing(model_size& size, qp_problem& qp, VectorXd& x0);
+        full_condensing(model_size& size);
+        void condense(qp_problem& qp, const VectorXd& x0);
 };
 
 
-#endif
+#endif  /* H_CPPMPC_FULL_CONDENSING */

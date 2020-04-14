@@ -10,8 +10,7 @@ OBJ += mpc_common.o
 OBJ += casadi_wrapper.o
 OBJ += qp_problem.o
 OBJ += full_condensing.o
-OBJ += qpsolver.o
-OBJ += rti_step.o
+OBJ += qp_solver.o
 OBJ += Timer.o
 
 all: directories $(CPPMPC_LIB)/libcppmpc.a $(CPPMPC_LIB)/libcppmpc.so
@@ -20,7 +19,7 @@ directories: $(CPPMPC_LIB)
 
 $(CPPMPC_LIB):
 	$(MKDIR_P) $(CPPMPC_LIB)
-	
+
 $(CPPMPC_LIB)/libcppmpc.so: $(OBJ)
 	@echo "Create" $@
 	@$(CPP) -shared -o $(CPPMPC_LIB)/libcppmpc.so $(OBJ) $(QPOASES_LINK) $(LINK_DEPENDS)
@@ -33,6 +32,6 @@ $(CPPMPC_LIB)/libcppmpc.a: $(OBJ)
 	@echo "Create" $@
 	@$(CPP) $(CPPFLAGS) -c $(IFLAGS) $<
 
-clean: 
+clean:
 	@echo "Cleaning up (src)"
 	@rm -rf *.o

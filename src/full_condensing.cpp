@@ -1,13 +1,37 @@
+/*
+ * Copyright (c) 2020 LAAS/CNRS
+ * All rights reserved.
+ *
+ * Redistribution  and  use  in  source  and binary  forms,  with  or  without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *   1. Redistributions of  source  code must retain the  above copyright
+ *      notice and this list of conditions.
+ *   2. Redistributions in binary form must reproduce the above copyright
+ *      notice and  this list of  conditions in the  documentation and/or
+ *      other materials provided with the distribution.
+ *
+ * THE SOFTWARE  IS PROVIDED "AS IS"  AND THE AUTHOR  DISCLAIMS ALL WARRANTIES
+ * WITH  REGARD   TO  THIS  SOFTWARE  INCLUDING  ALL   IMPLIED  WARRANTIES  OF
+ * MERCHANTABILITY AND  FITNESS.  IN NO EVENT  SHALL THE AUTHOR  BE LIABLE FOR
+ * ANY  SPECIAL, DIRECT,  INDIRECT, OR  CONSEQUENTIAL DAMAGES  OR  ANY DAMAGES
+ * WHATSOEVER  RESULTING FROM  LOSS OF  USE, DATA  OR PROFITS,  WHETHER  IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR  OTHER TORTIOUS ACTION, ARISING OUT OF OR
+ * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ *                                                 Martin Jacquet - March 2020
+ *                                               Based on CPPMPC by Yutao Chen
+ */
 #include "full_condensing.hpp"
 
-full_condensing_workspace& full_condensing_workspace::init(model_size& size)
+full_condensing::full_condensing(model_size& size)
 {
-    int nx = size.nx;
-    int nu = size.nu;
-    int nbx = size.nbx;
-    int nbg = size.nbg;
-    int nbgN = size.nbgN;
-    int N = size.N;
+    nx = size.nx;
+    nu = size.nu;
+    nbx = size.nbx;
+    nbg = size.nbg;
+    nbgN = size.nbgN;
+    N = size.N;
 
     Hc = Matrix<double, Dynamic, Dynamic, RowMajor>::Zero(N*nu,N*nu);
     Cc = Matrix<double, Dynamic, Dynamic, RowMajor>::Zero(N*nbx+N*nbg+nbgN,N*nu);
@@ -19,19 +43,10 @@ full_condensing_workspace& full_condensing_workspace::init(model_size& size)
     L = VectorXd::Zero((N+1)*nx);
     W = MatrixXd::Zero(nx,nu);
     w = VectorXd::Zero(nx);
-
-    return *this;
 }
 
-full_condensing_workspace& full_condensing_workspace::full_condensing(model_size& size, qp_problem& qp, VectorXd& x0)
+void full_condensing::condense(qp_problem& qp, const VectorXd& x0)
 {
-    int nx = size.nx;
-    int nu = size.nu;
-    int nbx = size.nbx;
-    int nbg = size.nbg;
-    int nbgN = size.nbgN;
-    int N = size.N;
-
     int idx = N*nbg+nbgN;
 
     int i, j;
@@ -69,18 +84,14 @@ full_condensing_workspace& full_condensing_workspace::full_condensing(model_size
     /* Compute CcN */
     if (nbgN > 0)
         for (i=0; i<N; i++)
-        {
             Cc.block(N*nbg,i*nu,nbgN,nu) = qp.data.CgN * G.block((N-1)*nx,i*nu,nx,nu);
-        }
 
     /* Compute Ccx */
     if (nbx > 0)
         for (i=0; i<N; i++)
-        {
             for(j=i+1;j<=N;j++)
                 Cc.block(idx+(j-1)*nbx,i*nu,nbx,nu) = qp.data.Cx * G.block((j-1)*nx,i*nu,nx,nu);
 
-        }
 
     /* compute L */
     L.head(nx) = x0 - qp.in.x.col(0);
@@ -122,6 +133,4 @@ full_condensing_workspace& full_condensing_workspace::full_condensing(model_size
             ucc.segment(idx+i*nbx,nbx) = qp.data.ub_x.segment(i*nbx,nbx) - lcc.segment(idx+i*nbx,nbx);
             lcc.segment(idx+i*nbx,nbx) = qp.data.lb_x.segment(i*nbx,nbx) - lcc.segment(idx+i*nbx,nbx);
         }
-
-    return *this;
 }

@@ -22,28 +22,37 @@
  *                                                 Martin Jacquet - March 2020
  *                                               Based on CPPMPC by Yutao Chen
  */
-#ifndef H_CPPMPC_CASADI_WRAPPER
-#define H_CPPMPC_CASADI_WRAPPER
+#ifndef H_CPPMPC_QP_SOLVER
+#define H_CPPMPC_QP_SOLVER
 
-void f_Fun(double** in, double** out);
-void vde_Fun(double** in, double** out);
-void impl_f_Fun(double** in, double** out);
-void impl_jac_x_Fun(double** in, double** out);
-void impl_jac_u_Fun(double** in, double** out);
-void impl_jac_xdot_Fun(double** in, double** out);
-void F_Fun(double** in, double** out);
-void D_Fun(double** in, double** out);
-void Hi_Fun(double** in, double** out);
-void HN_Fun(double** in, double** out);
-void gi_Fun(double** in, double** out);
-void gN_Fun(double** in, double** out);
-void Ci_Fun(double** in, double** out);
-void CN_Fun(double** in, double** out);
-void path_con_Fun(double** in, double** out);
-void path_con_N_Fun(double** in, double** out);
-void adj_Fun(double** in, double** out);
-void adjN_Fun(double** in, double** out);
-void obji_Fun(double** in, double** out);
-void objN_Fun(double** in, double** out);
+#include "mpc_common.hpp"
+#include "qp_problem.hpp"
+#include "full_condensing.hpp"
 
-#endif  /* H_CPPMPC_CASADI_WRAPPER */
+#include <qpOASES.hpp>
+
+using namespace qpOASES;
+
+class qp_solver{
+    private:
+        int nu;
+        int nbx;
+        int nbg;
+        int nbgN;
+        int N;
+
+        SQProblem*  myQP;
+        Options*    myOptions;
+
+        full_condensing* fc;
+
+    public:
+        qp_solver(model_size& size);
+        ~qp_solver();
+
+        void generate();
+        void solveQP(qp_problem& qp, const VectorXd& x0, uint64_t& sample);
+        void compute_obj(double& OBJ);
+};
+
+#endif  /* H_CPPMPC_QP_SOLVER */
