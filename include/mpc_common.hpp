@@ -25,49 +25,6 @@
 #ifndef H_CPPMPC_COMMON
 #define H_CPPMPC_COMMON
 
-struct model_size {
-    int nx;        // No. of states
-    int nu;        // No. of controls
-    int ny;        // No. of cost terms
-    int nyN;       // No. of cost terms in the terminal stage
-    int np;        // No. of on-line parameters
-    int nbx;       // No. of state box constraints
-    int nbu;       // No. of control box constraints
-    int nbg;       // No. of general constraints
-    int nbgN;      // No. of general constraints in the terminal stage
-    int N;         // No. of shooting points
-    int* nbx_idx;  // index of state box constraints
-    int* nbu_idx;  // index of control box constraints
-
-    void set_nx(const int n) {this->nx = n;}
-    void set_nu(const int n) {this->nu = n;}
-    void set_ny(const int n) {this->ny = n;}
-    void set_nyN(const int n) {this->nyN = n;}
-    void set_np(const int n) {this->np = n;}
-    void set_nbg(const int n) {this->nbg = n;}
-    void set_nbgN(const int n) {this->nbgN = n;}
-    void set_N(const int n) {this->N = n;}
-    void set_nbx(const int n, const int* a)
-    {
-        this->nbx = n;
-        this->nbx_idx = new int[n];
-        for (int i=0; i<n; i++)
-            this->nbx_idx[i] = a[i];
-    }
-    void set_nbu(const int n, const int* a)
-    {
-        this->nbu = n;
-        this->nbu_idx = new int[n];
-        for (int i=0; i<n; i++)
-            this->nbu_idx[i] = a[i];
-    }
-
-    ~model_size() {
-        delete [] this->nbx_idx;
-        delete [] this->nbu_idx;
-    }
-};
-
 void regularization(int n, double* A, double reg);
 
 #endif  /* H_CPPMPC_COMMON */

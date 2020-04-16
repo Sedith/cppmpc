@@ -35,11 +35,7 @@ using namespace qpOASES;
 
 class qp_solver{
     private:
-        int nu;
-        int nbx;
-        int nbg;
-        int nbgN;
-        int N;
+        uint16_t N;
 
         SQProblem*  myQP;
         Options*    myOptions;
@@ -47,7 +43,7 @@ class qp_solver{
         full_condensing* fc;
 
     public:
-        qp_solver(model_size& size);
+        qp_solver(const uint16_t& N);
         ~qp_solver();
 
         void generate();

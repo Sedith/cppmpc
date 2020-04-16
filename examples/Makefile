@@ -1,7 +1,8 @@
 include ../make.mk
 
 IFLAGS = -I$(CPPMPC_HEADER) \
-	     -I$(QPOASES_HEADER)
+	     -I$(QPOASES_HEADER) \
+		 -I$(MODEL_HEADER)
 
 # OBJ += InvertedPendulum.o
 OBJ += Quadrotor.o

@@ -32,12 +32,7 @@ using namespace Eigen;
 
 class full_condensing {
     private:
-        int nx;
-        int nu;
-        int nbx;
-        int nbg;
-        int nbgN;
-        int N;
+        uint16_t N;
 
         MatrixXd G;
         VectorXd L;
@@ -51,7 +46,7 @@ class full_condensing {
         VectorXd lcc;
         VectorXd ucc;
 
-        full_condensing(model_size& size);
+        full_condensing(uint16_t& N);
         void condense(qp_problem& qp, const VectorXd& x0);
 };
 

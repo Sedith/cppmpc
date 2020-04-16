@@ -50,7 +50,7 @@ class qp_in {
         VectorXd ubgN;
         double reg;
 
-        void init(model_size& size);
+        void init(uint16_t& N);
 };
 
 class qp_data {
@@ -74,7 +74,7 @@ class qp_data {
         VectorXd lb_g;
         VectorXd ub_g;
 
-        void init(model_size& size);
+        void init(uint16_t& N);
 };
 
 class qp_out {
@@ -86,7 +86,7 @@ class qp_out {
         VectorXd mu_x;
         VectorXd mu_g;
 
-        void init(model_size& size);
+        void init(uint16_t& N);
 };
 
 class qp_problem {
@@ -94,9 +94,9 @@ class qp_problem {
         qp_in in;
         qp_data data;
         qp_out out;
-        model_size size;
+        uint16_t N;
 
-        qp_problem(model_size& s);
+        qp_problem(const uint16_t& N);
         void generateQP();
         void expandSol(const VectorXd& x0);
         void info(double& OBJ);

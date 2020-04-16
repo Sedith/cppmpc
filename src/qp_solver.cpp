@@ -23,16 +23,13 @@
  *                                               Based on CPPMPC by Yutao Chen
  */
 #include "qp_solver.hpp"
+#include "constants.hpp"
 
-qp_solver::qp_solver(model_size& size)
+qp_solver::qp_solver(const uint16_t& N)
 {
-    nu = size.nu;
-    nbx = size.nbx;
-    nbg = size.nbg;
-    nbgN = size.nbgN;
-    N = size.N;
+    this->N = N;
 
-    fc = new full_condensing(size);
+    fc = new full_condensing(this->N);
     myQP = new SQProblem(N*nu, N*nbx+N*nbg+nbgN);
     myOptions = new Options();
     myOptions->setToMPC();

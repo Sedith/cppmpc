@@ -23,16 +23,11 @@
  *                                               Based on CPPMPC by Yutao Chen
  */
 #include "full_condensing.hpp"
+#include "constants.hpp"
 
-full_condensing::full_condensing(model_size& size)
+full_condensing::full_condensing(uint16_t& N)
 {
-    nx = size.nx;
-    nu = size.nu;
-    nbx = size.nbx;
-    nbg = size.nbg;
-    nbgN = size.nbgN;
-    N = size.N;
-
+    this->N = N;
     Hc = Matrix<double, Dynamic, Dynamic, RowMajor>::Zero(N*nu,N*nu);
     Cc = Matrix<double, Dynamic, Dynamic, RowMajor>::Zero(N*nbx+N*nbg+nbgN,N*nu);
     gc = VectorXd::Zero(N*nu);
@@ -84,14 +79,18 @@ void full_condensing::condense(qp_problem& qp, const VectorXd& x0)
     /* Compute CcN */
     if (nbgN > 0)
         for (i=0; i<N; i++)
+        {
             Cc.block(N*nbg,i*nu,nbgN,nu) = qp.data.CgN * G.block((N-1)*nx,i*nu,nx,nu);
+        }
 
     /* Compute Ccx */
     if (nbx > 0)
         for (i=0; i<N; i++)
+        {
             for(j=i+1;j<=N;j++)
                 Cc.block(idx+(j-1)*nbx,i*nu,nbx,nu) = qp.data.Cx * G.block((j-1)*nx,i*nu,nx,nu);
 
+        }
 
     /* compute L */
     L.head(nx) = x0 - qp.in.x.col(0);

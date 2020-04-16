@@ -24,21 +24,12 @@
  */
 #include "qp_problem.hpp"
 #include "casadi_wrapper.hpp"
+#include "constants.hpp"
 
 using namespace Eigen;
 
-void qp_in::init(model_size& size)
+void qp_in::init(uint16_t& N)
 {
-    int nx = size.nx;
-    int nu = size.nu;
-    int ny = size.ny;
-    int nyN = size.nyN;
-    int np = size.np;
-    int nbx = size.nbx;
-    int nbg = size.nbg;
-    int nbgN = size.nbgN;
-    int N = size.N;
-
     x = MatrixXd::Zero(nx,N+1);
     u = MatrixXd::Zero(nu,N);
     y = MatrixXd::Zero(ny,N);
@@ -56,17 +47,8 @@ void qp_in::init(model_size& size)
     ubgN = VectorXd::Zero(nbgN);
 }
 
-void qp_data::init(model_size& size)
+void qp_data::init(uint16_t& N)
 {
-    int nx = size.nx;
-    int nu = size.nu;
-    int nbx = size.nbx;
-    int nbg = size.nbg;
-    int nbgN = size.nbgN;
-    int N = size.N;
-    int* nbx_idx = size.nbx_idx;
-
-
     Q = MatrixXd::Zero(nx,(N+1)*nx);
     S = MatrixXd::Zero(nx,N*nu);
     R = MatrixXd::Zero(nu,N*nu);
@@ -90,16 +72,8 @@ void qp_data::init(model_size& size)
         Cx(i,nbx_idx[i]) = 1.0;
 }
 
-void qp_out::init(model_size& size)
-{
-    int nx = size.nx;
-    int nu = size.nu;
-    int nbg = size.nbg;
-    int nbgN = size.nbgN;
-    int N = size.N;
-    int nbx = size.nbx;
-
-    dx = MatrixXd::Zero(nx,N+1);
+void qp_out::init(uint16_t& N)
+{    dx = MatrixXd::Zero(nx,N+1);
     du = MatrixXd::Zero(nu,N);
     lam = MatrixXd::Zero(nx,N+1);
     mu_u = VectorXd::Zero(N*nu);
@@ -107,26 +81,16 @@ void qp_out::init(model_size& size)
     mu_g = VectorXd::Zero(nbg*N+nbgN);
 }
 
-qp_problem::qp_problem(model_size& s)
+qp_problem::qp_problem(const uint16_t& N)
 {
-    size = s;
-    in.init(size);
-    data.init(size);
-    out.init(size);
+    this->N = N;
+    in.init(this->N);
+    data.init(this->N);
+    out.init(this->N);
 }
 
 void qp_problem::generateQP()
 {
-    int nx = size.nx;
-    int nu = size.nu;
-    int ny = size.ny;
-    int np = size.np;
-    int nbx = size.nbx;
-    int nbg = size.nbg;
-    int nbgN = size.nbgN;
-    int N = size.N;
-    int* nbx_idx = size.nbx_idx;
-
     int i, j;
 
     // allocate array of pointers
@@ -189,6 +153,7 @@ void qp_problem::generateQP()
             casadi_out[1] = data.Cgu.data()+i*nbg*nu;
             Ci_Fun(casadi_in, casadi_out);
         }
+
     }
     // the terminal stage
     casadi_in[0] = in.x.data()+N*nx;
@@ -199,8 +164,10 @@ void qp_problem::generateQP()
     HN_Fun(casadi_in, casadi_out);
     regularization(nx, data.Q.data()+N*nx*nx, in.reg);
 
+
     casadi_out[0] = data.gx.data()+N*nx;
     gN_Fun(casadi_in, casadi_out);
+
 
     if (nbgN > 0)
     {
@@ -216,10 +183,6 @@ void qp_problem::generateQP()
 
 void qp_problem::expandSol(const VectorXd& x0)
 {
-    int nx = size.nx;
-    int nu = size.nu;
-    int N = size.N;
-
     out.dx.col(0) = x0 - in.x.col(0);
 
     for (int i=0; i<N; i++)
@@ -231,12 +194,6 @@ void qp_problem::expandSol(const VectorXd& x0)
 
 void qp_problem::info(double& OBJ)
 {
-    int nx = size.nx;
-    int nu = size.nu;
-    int ny = size.ny;
-    int np = size.np;
-    int N = size.N;
-
     // allocate array of pointers
     double* casadi_in[5];
     double* casadi_out[1];
