@@ -44,11 +44,11 @@ int main()
     x0(13) = hover_force;
     x0(14) = hover_force;
     x0(15) = hover_force;
-    for(int i=1;i<N+1;i++)
+    for(int i=0;i<N+1;i++)
         ws->qp->in.x.col(i) = x0;
 
     ws->qp->in.y(2,0) = 1;
-    for(int i=1;i<N;i++)
+    for(int i=0;i<N;i++)
         ws->qp->in.y.col(i) = ws->qp->in.y.col(0);
     ws->qp->in.yN = ws->qp->in.y.col(0);
 
@@ -110,7 +110,7 @@ int main()
     simu_in[2] = ws->qp->in.p.col(0).data();
 
     ofstream myfile;
-    myfile.open ("data.txt");
+    myfile.open ("data.log");
 
     ws->qp->info(OBJ);
     myfile <<"Sample 0: " << x0.transpose() << " | - |OBJ=: "<<OBJ<<endl;
@@ -159,7 +159,7 @@ int main()
         t += Ts;
 
         // store the closed-loop results
-        myfile <<"Sample " << sample <<": " << x0.array().segment(0,3).transpose() << " " << x0.array().segment(12,4).transpose() << " | " << ws->qp->in.u.col(0).transpose() << " |OBJ=: "<<OBJ <<" |CPT=: " << CPT << "ms" <<endl;
+        myfile << "Sample " << sample << ": " << x0.transpose() << " | " << ws->qp->in.u.col(0).transpose() << " |OBJ=: " << OBJ << " |CPT=: " << CPT << "ms" << endl;
 
         // shifting(optional)
         for (int i=0; i<N-1; i++)

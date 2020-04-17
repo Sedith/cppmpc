@@ -1,4 +1,4 @@
 lib/
 **/*.o
-data.txt
+data.log
 examples/*_d*
